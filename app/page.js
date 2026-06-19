@@ -1,12 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 
 import Header from "./components/Header";
 import LanguageSelector from "./components/LanguageSelector";
 import CodeEditor from "./components/CodeEditor";
 import ReviewButton from "./components/ReviewButton";
 import ReviewPanel from "./components/reviewPanel";
+
+const fakeReview = {
+  score: 92,
+  bugs: [
+    {
+      message: "Potential type coercion issue",
+      severity: "medium",
+    },
+  ],
+  bestPractices: [
+    "Add JSDoc comments",
+  ],
+  performance: [],
+  security: [],
+  improvements: [
+    "Validate input types",
+  ],
+  fixedCode: `function add(a, b) {
+  if(typeof a !== "number" || typeof b !== "number"){
+    throw new Error("Invalid input");
+  }
+
+  return a + b;
+}`,
+};
+
+
+
+
+
 
 export default function Home() {
   const [language, setLanguage] =
@@ -18,24 +48,40 @@ export default function Home() {
 }`
   );
 
-  const sampleReview = `
-# Code Review
 
-## Bugs
-- No major bugs found
+  const [review,setReview]=useState(null);
+  const [loading,setLoading]=useState(false);
 
-## Best Practices
-- Use descriptive variable names
 
-## Performance
-- Time Complexity: O(n)
 
-## Suggestions
 
-\`\`\`javascript
-const add = (a, b) => a + b;
-\`\`\`
-`;
+ async function handleReview(){
+  setLoading(true)
+  try {
+    const res=await fetch("/api/review",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+      },
+      body:JSON.stringify({
+        code,
+        language
+      })
+    })
+    if(!res.ok){
+      throw Error("Failed to get review!")
+    }
+
+    const data=await res.json();  
+    setReview(data);
+
+  } catch (error) {
+    console.log(error)
+    setReview("Error:"+ error.message)
+  }finally{
+    setLoading(false);
+  }
+ }
 
   return (
     <main className="h-screen bg-slate-950 text-white">
@@ -60,7 +106,7 @@ const add = (a, b) => a + b;
           </div>
 
           <div className="p-4 border-t border-slate-800">
-            <ReviewButton />
+            <ReviewButton onReview={handleReview} loading={loading}/>
           </div>
 
         </div>
@@ -75,7 +121,7 @@ const add = (a, b) => a + b;
             </h2>
 
             <ReviewPanel
-              review={sampleReview}
+              review={review}
             />
 
           </div>

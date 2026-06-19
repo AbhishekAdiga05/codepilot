@@ -1,6 +1,10 @@
-export default function ReviewButton() {
+export default function ReviewButton({
+  onReview,loading
+}) {
   return (
     <button
+    onClick={onReview}
+    disabled={loading}
       className="
         w-full
         bg-blue-600
@@ -13,7 +17,7 @@ export default function ReviewButton() {
         shadow-lg
       "
     >
-      Review Code
+      {loading? "Reviewing..." : "Review Code" }
     </button>
   );
 }
